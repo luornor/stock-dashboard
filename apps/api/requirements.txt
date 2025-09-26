@@ -1,0 +1,29 @@
+# Core
+django>=5.0,<6.0
+djangorestframework>=3.15
+djangorestframework-simplejwt>=5.3
+django-cors-headers>=4.3
+
+# WebSockets & async
+channels>=4.1
+channels-redis>=4.2
+uvicorn[standard]>=0.30
+
+# Database & cache
+psycopg2-binary>=2.9
+redis>=5.0
+
+# Background jobs
+celery>=5.3
+
+# Developer tools
+python-dotenv>=1.0
+black>=24.0
+ruff>=0.5
+pytest>=8.0
+pytest-django>=4.8
+factory-boy>=3.3
+requests
+whitenoise
+google-auth
+google-auth-oauthlib

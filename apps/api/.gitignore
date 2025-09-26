@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+.Python
+db.sqlite3
+
+# Virtualenv
+.venv/
+env/
+venv/
+ENV/
+
+# Django
+/staticfiles/
+/media/
+/local_settings.py
+
+# Logs
+*.log
+logs/
+celerybeat-schedule
+*.pid
+
+# Node / Next.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.next/
+out/
+
+# Docker
+*.pid
+*.seed
+*.bak
+docker-data/
+pgdata/
+redis-data/
+
+# Env & config (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+.DS_Store
+google-auth
+google-auth-oauthlib
