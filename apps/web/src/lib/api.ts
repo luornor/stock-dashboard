@@ -14,7 +14,7 @@ export async function apiGet(path: string) {
 }
 
 
-export async function apiPost(path: string, body: any) {
+export async function apiPost<Body = unknown, Res = unknown>(path: string, body?: Body): Promise<Res> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -23,11 +23,14 @@ export async function apiPost(path: string, body: any) {
     headers.Authorization = auth.Authorization;
   }
   const res = await fetch(`${API_BASE}${path}`, {
-	method: "POST",
-	headers,
-	body: JSON.stringify(body),
+    method: "POST",
+    headers,
+    body: typeof body === "undefined" ? undefined : JSON.stringify(body),
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.detail || "Request failed");
-    return data;
+  const data = (await res.json().catch(() => ({}))) as Res | { detail?: string };
+  if (!res.ok) {
+    const detail = (data as { detail?: string })?.detail;
+    throw new Error(detail || "Request failed");
   }
+  return data as Res;
+}

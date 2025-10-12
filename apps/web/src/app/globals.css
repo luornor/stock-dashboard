@@ -1,14 +1,33 @@
+/* src/app/globals.css */
 @import "tailwindcss";
 
-:root {
---bg: 246 246 248; /* light */
+/* ---- Design tokens (v4) ---- */
+@theme {
+  --color-brand: #2563eb;                /* brand blue */
+  --shadow-soft: 0 10px 30px -12px rgb(0 0 0 / 0.25);
 }
 
-
+/* ---- Base ---- */
 html, body { height: 100%; }
 body { @apply bg-white text-neutral-900 antialiased; }
 .dark body { @apply bg-neutral-950 text-neutral-100; }
 
+/* ---- Custom utilities (v4) ---- */
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+@utility text-brand {
+  color: var(--color-brand);
+}
+@utility bg-brand-10 {
+  /* 10% brand tint */
+  background-color: color-mix(in oklab, var(--color-brand) 10%, transparent);
+}
 
-/* card */
-.card { @apply rounded-2xl shadow-soft bg-white/70 dark:bg-neutral-900/70 backdrop-blur border border-neutral-200/60 dark:border-neutral-800; }
+/* ---- Components ---- */
+@layer utilities {
+  .card {
+    @apply rounded-2xl shadow-soft bg-white/70 dark:bg-neutral-900/70 backdrop-blur
+           border border-neutral-200/60 dark:border-neutral-800;
+  }
+}
