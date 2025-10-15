@@ -26,12 +26,32 @@ def latest_quotes(request):
     return Response(LatestQuoteSerializer(out, many=True).data)
     
 
+from rest_framework import status
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def historical(request):
-    symbol = request.GET.get("symbol")
-    # range param optional — keep simple for now
-    t = Ticker.objects.get(symbol=symbol)
-    qs = PriceSnapshot.objects.filter(ticker=t).order_by("ts") \
-        .values("ts","open","high","low","close","volume")
-    return Response(list(qs))
+    symbol = (request.GET.get("symbol") or "").upper().strip()
+    if not symbol:
+        return Response({"detail": "symbol is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Ensure ticker exists (prevents DoesNotExist -> 500)
+    t, _ = Ticker.objects.get_or_create(symbol=symbol)
+
+    rows = list(
+        PriceSnapshot.objects
+        .filter(ticker=t)
+        .order_by("ts")
+        .values("ts", "open", "high", "low", "close", "volume")
+    )
+
+    # If no data yet, optionally trigger a background backfill (non-blocking)
+    if not rows:
+        try:
+            from .tasks import backfill_daily
+            backfill_daily.delay(symbol)   # safe if Celery running
+        except Exception:
+            pass
+
+    return Response(rows, status=status.HTTP_200_OK)
+

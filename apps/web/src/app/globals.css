@@ -10,7 +10,7 @@
 /* ---- Base ---- */
 html, body { height: 100%; }
 body { @apply bg-white text-neutral-900 antialiased; }
-.dark body { @apply bg-neutral-950 text-neutral-100; }
+.dark body { @apply bg-neutral-500 text-neutral-100; }
 
 /* ---- Custom utilities (v4) ---- */
 @utility shadow-soft {

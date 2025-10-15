@@ -114,7 +114,7 @@ def poll_symbol(self, symbol: str):
     return payload
 
 
-POPULAR = ["AAPL","MSFT","GOOGL"]  # keep it small on free tier
+POPULAR = ["AAPL","MSFT","GOOGL","AMZN"]  # keep it small on free tier
 
 @shared_task
 def poll_popular_tickers():

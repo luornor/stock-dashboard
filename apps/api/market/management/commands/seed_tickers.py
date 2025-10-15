@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from market.models import Ticker
 
 DEFAULTS = [
-    "AAPL","MSFT","GOOGL"]
+    "AAPL","MSFT","GOOGL","AMZN"]
 class Command(BaseCommand):
     help = "Seed popular tickers"
     def handle(self, *args, **kwargs):
