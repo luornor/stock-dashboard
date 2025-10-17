@@ -4,16 +4,46 @@
 import { useEffect, useRef } from "react";
 import { API_BASE } from "@/lib/api";
 
+type GoogleCredentialResponse = {
+  credential?: string;
+};
+
+interface GoogleAccountsId {
+  initialize: (opts: {
+    client_id: string;
+    callback: (resp: GoogleCredentialResponse) => void | Promise<void>;
+  }) => void;
+  renderButton: (
+    parent: HTMLElement,
+    options: {
+      theme?: "outline" | "filled" | string;
+      size?: "large" | "medium" | "small" | string;
+      shape?: "pill" | "rectangular" | string;
+      width?: number;
+    }
+  ) => void;
+}
+
+declare global {
+  interface Window {
+    google?: {
+      accounts?: {
+        id?: GoogleAccountsId;
+      };
+    };
+  }
+}
+
 export default function GoogleLoginButton() {
   const divRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const g = (window as any)?.google?.accounts?.id;
+    const g = window.google?.accounts?.id;
     if (!g || !divRef.current || !process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) return;
 
     g.initialize({
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-      callback: async (resp: any) => {
+      callback: async (resp: GoogleCredentialResponse) => {
         const id_token = resp?.credential;
         if (!id_token) return;
 
