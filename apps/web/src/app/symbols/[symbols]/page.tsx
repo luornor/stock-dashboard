@@ -5,14 +5,11 @@ import PriceChart from "@/components/PriceChart";
 import { apiGet } from "@/lib/api";
 import SiteHeader from "@/components/SiteHeader";
 
-interface PageProps {
-  params: { symbols: string };
-}
 
-export default function SymbolPage({ params }: PageProps) {
+
+export default function Page({ params }: { params: { symbols: string } }) {
   const { symbols } = params;
   const [data, setData] = useState<Array<{ ts: string; close: number }>>([]);
-
   useEffect(() => {
     (async () => {
       try {
