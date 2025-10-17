@@ -1,5 +1,10 @@
 import SymbolsPageClient from "./SymbolsPageClient";
 
-export default function Page({ params }: { params: { symbols: string } }) {
-  return <SymbolsPageClient symbols={params.symbols} />;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ symbols: string }>;
+}) {
+  const { symbols } = await params; // <-- important
+  return <SymbolsPageClient symbols={symbols} />;
 }

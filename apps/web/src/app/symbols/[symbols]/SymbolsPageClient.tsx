@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Protected from "@/components/Protected";
 import PriceChart from "@/components/PriceChart";
@@ -11,14 +12,10 @@ export default function SymbolsPageClient({ symbols }: { symbols: string }) {
   useEffect(() => {
     if (!symbols) return;
     (async () => {
-      try {
-        const rows = await apiGet(`/quotes/historical?symbol=${symbols}`);
-        const typedRows = rows as Array<{ ts: string; close: string | number }>;
-        setData(typedRows.map((r) => ({ ts: r.ts, close: Number(r.close) })));
-      } catch (e) {
-        console.error(e);
-      }
-    })();
+      const rows = await apiGet(`/quotes/historical?symbol=${symbols}`);
+      const typedRows = rows as Array<{ ts: string; close: string | number }>;
+      setData(typedRows.map(r => ({ ts: r.ts, close: Number(r.close) })));
+    })().catch(console.error);
   }, [symbols]);
 
   return (
