@@ -25,7 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret")
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
+# Toggle with env var (DEBUG=1 for dev, 0 for prod)
+DEBUG = os.getenv("DEBUG", "0") == "1"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if os.getenv("CSRF_TRUSTED_ORIGINS") else []
 # Application definition
@@ -79,29 +80,35 @@ ASGI_APPLICATION = "core.asgi.application"
 
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+# --- Local Postgres defaults (docker-compose) ---
+POSTGRES_DB = os.getenv("POSTGRES_DB", "stockdb")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "db")  
+POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
+
+LOCAL_DB_URL = (
+    f"postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@"
+    f"{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+)
+
+# If DATABASE_URL is present (e.g., on Render/Aiven), use it; else use local
+DB_URL = os.getenv("DATABASE_URL", LOCAL_DB_URL)
+
+# Require SSL automatically when using a cloud DB (DATABASE_URL present),
+# or override explicitly with DB_SSL_REQUIRE=1/0
+SSL_REQUIRE = (os.getenv("DB_SSL_REQUIRE")
+               or ("1" if os.getenv("DATABASE_URL") else "0")) == "1"
+
 DATABASES = {
-    # "default": {
-    #     "ENGINE": "django.db.backends.postgresql",
-    #     "NAME": os.getenv("POSTGRES_DB"),
-    #     "USER": os.getenv("POSTGRES_USER"),
-    #     "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-    #     "HOST": "db",
-    #     "PORT": 5432,
-    # }
-    "default": dj_database_url.config(
-        env="DATABASE_URL",
+    "default": dj_database_url.parse(
+        DB_URL,
         conn_max_age=600,
-        ssl_require=True,   # important for Aiven
+        ssl_require=SSL_REQUIRE,
     )
 }
+
 
 
 AUTHENTICATION_BACKENDS = [
