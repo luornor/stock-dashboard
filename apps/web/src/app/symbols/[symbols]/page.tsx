@@ -5,12 +5,14 @@ import PriceChart from "@/components/PriceChart";
 import { apiGet } from "@/lib/api";
 import SiteHeader from "@/components/SiteHeader";
 
+type PageProps = { params?: { symbols?: string } };
 
-
-export default function Page({ params }: { params: { symbols: string } }) {
-  const { symbols } = params;
+export default function Page(props: PageProps) {
+  const symbols = String(props?.params?.symbols ?? "");
   const [data, setData] = useState<Array<{ ts: string; close: number }>>([]);
+
   useEffect(() => {
+    if (!symbols) return;
     (async () => {
       try {
         const rows = await apiGet(`/quotes/historical?symbol=${symbols}`);
