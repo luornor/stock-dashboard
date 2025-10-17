@@ -1,7 +1,7 @@
 # Create your models here.
 from django.db import models
-from django.contrib.auth import get_user_model
-User = get_user_model()
+from django.conf import settings
+from django.utils import timezone
 
 class Ticker(models.Model):
     symbol = models.CharField(max_length=12, unique=True)
@@ -12,7 +12,7 @@ class Ticker(models.Model):
     def __str__(self): return self.symbol
 
 class Watchlist(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=64)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -35,11 +35,7 @@ class PriceSnapshot(models.Model):
         unique_together = (("ticker", "ts"),)
         indexes = [models.Index(fields=["ticker", "ts"])]
 
-from django.db import models
-from django.contrib.auth import get_user_model
-from django.utils import timezone
 
-User = get_user_model()
 
 class Alert(models.Model):
     # Types of alerts
@@ -62,7 +58,7 @@ class Alert(models.Model):
         (SESSION_OPEN, "Session Open"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="alerts")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="alerts")
     ticker = models.ForeignKey("Ticker", on_delete=models.CASCADE, related_name="alerts")
     kind = models.CharField(max_length=16, choices=KIND_CHOICES)
     # For ABOVE/BELOW: absolute price (e.g., 250.00)
