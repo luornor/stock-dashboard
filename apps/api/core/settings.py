@@ -110,6 +110,7 @@ DATABASES = {
 }
 
 
+AUTH_USER_MODEL = "accounts.User"                 # custom user (below)
 
 AUTHENTICATION_BACKENDS = [
     "accounts.backends.PasswordLoginDisabledBackend",
@@ -155,7 +156,6 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")  # set this in .env
-AUTH_USER_MODEL = "accounts.User"                 # custom user (below)
 
 
 
