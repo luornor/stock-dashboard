@@ -8,7 +8,7 @@ WORKDIR /code
 
 # System deps (psycopg needs libpq-dev if not using binary wheel)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential libpq-dev curl && \
+    bash build-essential libpq-dev curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for layer caching
