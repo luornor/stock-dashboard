@@ -1,6 +1,7 @@
 "use client";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { LineChart, Line, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, ResponsiveContainer } from "recharts";
+import { format } from "date-fns"; // date-fns for date formatting
 
 export type TickerCardProps = {
   symbol: string;
@@ -23,16 +24,26 @@ export default function TickerCard({ symbol, price, changePct, spark }: TickerCa
         </div>
       </div>
 
-      <div className="mt-1 text-2xl font-bold text-white">
-        {price ? price.toFixed(2) : <span className="inline-block h-6 w-24 animate-pulse rounded bg-neutral-200 dark:bg-neutral-400" />}
+      <div className="mt-1 text-2xl font-bold">
+        {price ? price.toFixed(2) : (
+          <span className="inline-block h-6 w-24 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+        )}
       </div>
 
       <div className="h-16 mt-2">
         {loading ? (
-          <div className="h-full w-full animate-pulse rounded bg-neutral-100 dark:bg-neutral-400" />
+          <div className="h-full w-full animate-pulse rounded bg-neutral-100 dark:bg-neutral-900" />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={spark} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
+              <XAxis
+                dataKey="x"
+                tickFormatter={(x) => format(new Date(x), 'MMM d')}
+                axisLine={false}
+                tickLine={false}
+                minTickGap={10}
+                tick={{ fill: 'currentColor', fontSize: 11 }}
+              />
               <Line type="monotone" dataKey="y" dot={false} strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
