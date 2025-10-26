@@ -1,43 +1,62 @@
-// api.ts — session/cookie version
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "/api";
 
-function toUrl(path: string) {
-  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+import { getAccess, getRefresh, setTokens} from "./auth";
+
+async function refreshAccess(): Promise<string | null> {
+  const refresh = getRefresh();
+  if (!refresh) return null;
+  const res = await fetch(`${API_BASE}/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh }),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (data?.access) {
+    setTokens(data.access); // keep existing refresh
+    return data.access as string;
+  }
+  return null;
 }
 
-async function handle(res: Response) {
-  const text = await res.text();
-  let data: unknown;
-  try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-  if (!res.ok) {
-    // Safely derive an error message from the parsed response
-    let message = res.statusText;
-    if (typeof data === "object" && data !== null) {
-      const obj = data as Record<string, unknown>;
-      if (typeof obj.detail === "string") message = obj.detail;
-      else if (typeof obj.message === "string") message = obj.message;
-    } else if (typeof data === "string") {
-      message = data;
-    }
-    throw new Error(message);
-  }
-  return data;
+function authHeaders(token?: string | null): Record<string, string> {
+  const t = token ?? getAccess();
+  return t ? { Authorization: `Bearer ${t}` } : ({} as Record<string, string>);
 }
 
 export async function apiGet(path: string) {
-  const res = await fetch(toUrl(path), {
-    method: "GET",
-    credentials: "include",     // <-- important
-  });
-  return handle(res);
+  // try with current token
+  const token = getAccess();
+  let res = await fetch(`${API_BASE}${path}`, { headers: { ...authHeaders(token) } });
+  if (res.status === 401) {
+    // try refresh once
+    const newToken = await refreshAccess();
+    if (newToken) {
+      res = await fetch(`${API_BASE}${path}`, { headers: { ...authHeaders(newToken) } });
+    }
+  }
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
 }
 
 export async function apiPost(path: string, body: unknown) {
-  const res = await fetch(toUrl(path), {
+  const token = getAccess();
+  let res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
-    credentials: "include",     // <-- important
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
     body: JSON.stringify(body),
   });
-  return handle(res);
+  if (res.status === 401) {
+    const newToken = await refreshAccess();
+    if (newToken) {
+      res = await fetch(`${API_BASE}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders(newToken) },
+        body: JSON.stringify(body),
+      });
+    }
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.detail || "Request failed");
+  return data;
 }
