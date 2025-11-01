@@ -11,8 +11,11 @@ uvicorn[standard]>=0.30
 
 # Database & cache
 psycopg2-binary>=2.9
-redis>=5.0a
 dj-database-url
+channels-redis
+redis
+django-redis
+
 
 # Background jobs
 celery>=5.3
