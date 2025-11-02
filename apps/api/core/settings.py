@@ -117,22 +117,42 @@ AUTHENTICATION_BACKENDS = [
     "accounts.backends.PasswordLoginDisabledBackend",
 ]  # remove 'django.contrib.auth.backends.ModelBackend'
 
-
-# Redis settings for Channels
+# Redis configuration
 REDIS_URL = os.getenv("REDIS_URL")
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [REDIS_URL]},
-    }
-}
+if REDIS_URL:
+    # Celery
+    CELERY_BROKER_URL = REDIS_URL
+    CELERY_RESULT_BACKEND = REDIS_URL
 
-# Celery
-CELERY_BROKER_URL = REDIS_URL
-CELERY_RESULT_BACKEND = REDIS_URL
-CELERY_TASK_ALWAYS_EAGER = False
-CELERY_TIMEZONE = "UTC"
+    # Django cache (needs django-redis)
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                # SSL auto when rediss://, but this is fine to leave
+                "CONNECTION_POOL_KWARGS": {"ssl": REDIS_URL.startswith("rediss://")},
+            },
+        }
+    }
+
+    # Channels (channels-redis)
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {"hosts": [REDIS_URL]},
+        }
+    }
+else:
+    # Fallbacks when REDIS_URL not set (so prod doesn't crash if missing)
+    CELERY_BROKER_URL = "memory://"
+    CELERY_RESULT_BACKEND = "cache+memory://"
+    CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+    from channels.layers import InMemoryChannelLayer
+    CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
 
 from celery.schedules import crontab
 
