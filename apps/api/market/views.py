@@ -8,7 +8,7 @@ from .models import Ticker, PriceSnapshot
 from .serializers import LatestQuoteSerializer
 import os, json, redis
 
-r = redis.from_url(os.getenv("REDIS_URL", "redis://redis:6379/0"))
+r = redis.from_url(os.getenv("REDIS_URL"))
 
 
 @api_view(["GET"])
